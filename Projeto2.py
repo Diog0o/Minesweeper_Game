@@ -245,6 +245,10 @@ def obtem_ultima_coluna(m):
 def obtem_ultima_linha(m):
     return m[2]
 
+def obtem_parcela(m,c):
+    for i in m:
+        if ()
+
 
 
 
