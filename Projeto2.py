@@ -55,18 +55,16 @@ def gera_numero_aleatorio (g,n):
     atualiza_estado(g)
     return 1 + obtem_estado(g) % n
     
-def gera_caracter_aleatorio (g,c): # c nao pode ser "A" <--------------
+def gera_carater_aleatorio (g,c): # c nao pode ser "A" <--------------
     atualiza_estado(g)
-    l = ord(c) - ord("A")
+    l = ord(c) - ord("A") + 1
     return chr( ord("A") + obtem_estado(g) % l)
 
 
-g1 = cria_gerador(32, 1)
-# print(gerador_para_str(g1))
-# print([atualiza_estado(g1) for n in range(3)])
-# print(gera_numero_aleatorio(g1,134))
-# print(type(gera_numero_aleatorio(g1,100)))
-# print(gera_caracter_aleatorio(g1, "B"))
+g2 = cria_gerador(64, 1)
+[atualiza_estado(g2) for n in range(5)]
+print(gerador_para_str(g2))
+print(gera_carater_aleatorio(g2, "Z"))
 
 
 #2.1.2
@@ -138,14 +136,9 @@ def obtem_coordenadas_vizinhas (c):
 
 def obtem_coordenada_aleatoria(c,g):
     linha_aleatoria = gera_numero_aleatorio(g, obtem_linha(c))
-    coluna_aleatoria = gera_caracter_aleatorio(g, obtem_coluna(c))
+    coluna_aleatoria = gera_carater_aleatorio(g, obtem_coluna(c))
     return cria_coordenada(coluna_aleatoria,linha_aleatoria)
 
-
-
-c3 = cria_coordenada("Z", 99)
-c4 = obtem_coordenada_aleatoria(c3, g1)
-print(coordenada_para_str(c4))
 
 # 2.1.3
 
@@ -226,6 +219,32 @@ def alterna_bandeira(p):
         marca_parcela(p)
         return True
     return False
+
+
+#2.1.4
+
+def cria_campo (c,l):
+    if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
+        raise ValueError("cria_campo: argumentos invalidos")
+    res=[]
+    for j in range (1,l):
+        for i in range (ord("A"), ord(c)):  
+            coordenada= cria_coordenada(chr(i),j)
+            key= chr(i) + str(j)
+            coordenada[key]= cria_parcela()
+            res= res + [coordenada,]
+    return (res,c,l)
+
+def cria_copia_campo(m):
+    copia = m
+    return copia
+
+def obtem_ultima_coluna(m):
+    return m[1]
+
+def obtem_ultima_linha(m):
+    return m[2]
+
 
 
 
