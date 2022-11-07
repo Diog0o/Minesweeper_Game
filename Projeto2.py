@@ -1,5 +1,65 @@
 #2.1.1
 
+def cria_gerador (b,s):
+    if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<0): #Pode ser negativo??
+        raise ValueError("cria gerador: argumentos invalidos")
+    return {"dimensao":b , "seed":s , "estado": s}
+
+def cria_copia_gerador (g):
+    return {"dimensao": g["dimensao"], "seed": g["seed"], "estado": g["estado"]}
+
+def obtem_estado (g):
+    return g["estado"]
+
+def define_estado (g,s):
+    g["estado"] = s
+    return s
+
+def atualiza_estado (g):
+    if (g["dimensao"] == 32):
+        s = g["estado"]
+        s ^= ( s << 13 ) & 0xFFFFFFFF
+        s ^= ( s >> 17 ) & 0xFFFFFFFF
+        s ^= ( s << 5 ) & 0xFFFFFFFF
+        g["estado"] = s
+    else:
+        s = g["estado"]
+        s ^= ( s << 13 ) & 0xFFFFFFFFFFFFFFFF
+        s ^= ( s >> 7 ) & 0xFFFFFFFFFFFFFFFF
+        s ^= ( s << 17 ) & 0xFFFFFFFFFFFFFFFF
+        g["estado"] = s
+    return s
+
+def eh_gerador (arg):
+    if type(arg) != dict or "dimensao" not in arg or "seed" not in arg or "estado" not in arg:
+        return False
+    if arg["dimensao"] != 32 and arg["dimensao"] != 64:
+        return False
+    if type(arg["seed"]) != int or arg["seed"] < 0 or type(arg["estado"]) != int or arg["estado"] < 0:
+        return False
+    return True
+
+def geradores_iguais (g1,g2):
+    if (eh_gerador(g1) and eh_gerador (g2)):
+        if g1["dimensao"] == g2["dimensao"] and g1["seed"] == g2["seed"] and g1["estado"] == g2["estado"]:
+            return True
+    return False
+
+def gerador_para_str(g):
+    return "xorshift" + str(g["dimensao"]) + "(s=" +  str(g["estado"]) +")"
+
+def gera_numero_aleatorio (g,n):
+    
+
+
+
+# g1 = cria_gerador(32, 1)
+# print(gerador_para_str(g1))
+# print([atualiza_estado(g1) for n in range(3)])
+
+
+
+
 
 
 
