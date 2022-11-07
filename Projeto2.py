@@ -48,20 +48,25 @@ def geradores_iguais (g1,g2):
 def gerador_para_str(g):
     return "xorshift" + str(g["dimensao"]) + "(s=" +  str(g["estado"]) +")"
 
+
+#Provavelmente falta verificar os argumentos
+
 def gera_numero_aleatorio (g,n):
+    atualiza_estado(g)
+    return 1 + obtem_estado(g) % n
     
+def gera_caracter_aleatorio (g,c): # c nao pode ser "A" <--------------
+    atualiza_estado(g)
+    l = ord(c) - ord("A")
+    return chr( ord("A") + obtem_estado(g) % l)
 
 
-
-# g1 = cria_gerador(32, 1)
+g1 = cria_gerador(32, 1)
 # print(gerador_para_str(g1))
 # print([atualiza_estado(g1) for n in range(3)])
-
-
-
-
-
-
+# print(gera_numero_aleatorio(g1,134))
+# print(type(gera_numero_aleatorio(g1,100)))
+# print(gera_caracter_aleatorio(g1, "B"))
 
 
 #2.1.2
@@ -81,17 +86,14 @@ def obtem_coluna(c):
     
 def obtem_linha(c):
     key=list(c.keys())
-    if int(key[0][1:]) < 10:
-        return str(0) + key[0][1:]
-    else:
-        return key[0][1:]
+    return int(key[0][1:])
 
 
 def eh_coordenada(arg):
     if type(arg) != dict or len(arg) != 1:
         return False
     key=list(arg.keys())
-    if  type(key[0][0])!=str or ord(key[0][0]) < 65 or ord(key[0][0])>90 or type(key[0][1:]) != int or key[0][1:]>99:
+    if  type(key[0][0])!=str or ord(key[0][0]) < 65 or ord(key[0][0])>90 or type(int(key[0][1:])) != int or int(key[0][1:])>100 or int(key[0][1:])<1:
         return False
     return True
 
@@ -103,7 +105,12 @@ def coordenadas_iguais (c1,c2):
     return False
 
 def coordenada_para_str(c):
-    return obtem_coluna(c) + obtem_linha(c)
+    key=list(c.keys())
+    if int(key[0][1:]) < 10:
+        linha = str(0) + key[0][1:]
+    else:
+        linha = key[0][1:]
+    return obtem_coluna(c) + linha
 
 def str_para_coordenada(s):
     if s[1] == 0:
@@ -113,12 +120,115 @@ def str_para_coordenada(s):
 
 def obtem_coordenadas_vizinhas (c):
     res=()
+    coluna = obtem_coluna(c)
+    linha = obtem_linha(c)
+    c1=cria_coordenada(chr(ord(coluna)-1), linha - 1)
+    c8=cria_coordenada(chr(ord(coluna)-1), linha)
+    c7=cria_coordenada(chr(ord(coluna)-1), linha + 1)
+    c6=cria_coordenada(coluna, linha + 1)
+    c5=cria_coordenada(chr(ord(coluna)+1), linha +1)
+    c4=cria_coordenada(chr(ord(coluna)+1), linha)
+    c3=cria_coordenada(chr(ord(coluna)+1), linha-1)
+    c2=cria_coordenada(coluna, linha -1 )
+    res_provisorio=(c1,c2,c3,c4,c5,c6,c7,c8)
+    for i in res_provisorio:
+        if eh_coordenada(i) == True:
+            res= res + (i,)
+    return res
 
-print(ord("A"))
-print(ord("B")) 
+def obtem_coordenada_aleatoria(c,g):
+    linha_aleatoria = gera_numero_aleatorio(g, obtem_linha(c))
+    coluna_aleatoria = gera_caracter_aleatorio(g, obtem_coluna(c))
+    return cria_coordenada(coluna_aleatoria,linha_aleatoria)
+
+
+
+c3 = cria_coordenada("Z", 99)
+c4 = obtem_coordenada_aleatoria(c3, g1)
+print(coordenada_para_str(c4))
+
+# 2.1.3
+
+def cria_parcela ():
+    return {"estado": "tapada", "mina": "nao"}
+
+def cria_copia_parcela (p):
+    return {"estado": p["estado"], "mina": p["mina"]}
+
+def limpa_parcela (p):
+    p["estado"] = "limpa"
+    return p
+
+def marca_parcela (p):
+    p["estado"] = "marcada"
+    return p
+
+def desmarca_parcela (p):
+    p["estado"] = "tapada"
+    return p
+
+def esconde_mina (p):
+    p["mina"] = "sim"
+    return p
+
+def eh_parcela (arg):
+    if type(arg) != dict or "estado" not in arg or "mina" not in arg:
+        return False
+    if (arg["estado"] != "tapada" and arg["estado"] != "limpa" and arg["estado"] != "marcada" ) or (arg["mina"] != "sim" and arg["mina"] != "nao"):
+        return False
+    return True
+
+def eh_parcela_tapada (p):
+    if (eh_parcela(p)):
+        if (p["estado"] == "tapada"):
+            return True
+    return False
+
+def eh_parcela_marcada (p):
+    if (eh_parcela(p)):
+        if (p["estado"] == "marcada"):
+            return True
+    return False
+
+def eh_parcela_limpa (p):
+    if (eh_parcela(p)):
+        if (p["estado"] == "limpa"):
+            return True
+    return False
+
+def eh_parcela_minada (p):
+    if (eh_parcela(p)):
+        if (p["mina"] == "sim"):
+            return True
+    return False
+
+def parcelas_iguais(p1,p2):
+    if (eh_parcela(p1) and eh_parcela(p2)):
+        if (p1["estado"] == p2["estado"] and p1["mina"] == p2["mina"]):
+            return True
+    return False
+
+def parcela_para_str (p):
+    if p["estado"] == "tapada":
+        return "#"
+    if p["estado"] == "marcada":
+        return "@"
+    if p["estado"] == "limpa" and p["mina"] == "nao":
+        return "?"
+    else:
+        return "X"
+
+def alterna_bandeira(p):
+    if eh_parcela_marcada(p):
+        desmarca_parcela(p)
+        return True
+    if eh_parcela_tapada(p):
+        marca_parcela(p)
+        return True
+    return False
 
 
 
 
-c1 = cria_coordenada("B", 10)
-print(obtem_linha(c1))
+
+    
