@@ -74,8 +74,11 @@ def cria_coordenada(col,lin):
         raise ValueError("cria coordenada: argumentos invalidos")
     else:
         dicionario ={}
-        coordenada = col + str(lin)
-        dicionario[coordenada] = 0 
+        if lin >= 10:
+            coordenada =col + str(lin)
+        else:
+            coordenada = col + "0" + str(lin)
+    dicionario[coordenada] = 0 
     return dicionario
 
 def obtem_coluna(c):
@@ -84,7 +87,7 @@ def obtem_coluna(c):
     
 def obtem_linha(c):
     key=list(c.keys())
-    return int(key[0][1:])
+    return key[0][1:]
 
 
 def eh_coordenada(arg):
@@ -103,12 +106,7 @@ def coordenadas_iguais (c1,c2):
     return False
 
 def coordenada_para_str(c):
-    key=list(c.keys())
-    if int(key[0][1:]) < 10:
-        linha = str(0) + key[0][1:]
-    else:
-        linha = key[0][1:]
-    return obtem_coluna(c) + linha
+    return obtem_coluna(c) + obtem_linha(c)
 
 def str_para_coordenada(s):
     if s[1] == 0:
@@ -119,7 +117,7 @@ def str_para_coordenada(s):
 def obtem_coordenadas_vizinhas (c):
     res=()
     coluna = obtem_coluna(c)
-    linha = obtem_linha(c)
+    linha = int(obtem_linha(c))
     c1=cria_coordenada(chr(ord(coluna)-1), linha - 1)
     c8=cria_coordenada(chr(ord(coluna)-1), linha)
     c7=cria_coordenada(chr(ord(coluna)-1), linha + 1)
@@ -135,9 +133,19 @@ def obtem_coordenadas_vizinhas (c):
     return res
 
 def obtem_coordenada_aleatoria(c,g):
-    linha_aleatoria = gera_numero_aleatorio(g, obtem_linha(c))
+    linha_aleatoria = gera_numero_aleatorio(g, int(obtem_linha(c)))
     coluna_aleatoria = gera_carater_aleatorio(g, obtem_coluna(c))
     return cria_coordenada(coluna_aleatoria,linha_aleatoria)
+
+
+# c1=cria_coordenada("B", 1)
+# c2 = cria_coordenada("N", 20)
+# print(coordenadas_iguais(c1, c2))
+
+# print(coordenada_para_str(c1))
+
+# t = obtem_coordenadas_vizinhas(c1)
+# print(tuple(coordenada_para_str(p) for p in t))
 
 
 # 2.1.3
@@ -227,10 +235,13 @@ def cria_campo (c,l):
     if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
         raise ValueError("cria_campo: argumentos invalidos")
     res=[]
-    for j in range (1,l):
-        for i in range (ord("A"), ord(c)):  
+    for j in range (1,l +1):
+        for i in range (ord("A"), ord(c) +1):  
             coordenada= cria_coordenada(chr(i),j)
-            key= chr(i) + str(j)
+            if j >= 10:
+                key= chr(i) + str(j)
+            else:
+                key = chr(i) + "0" + str(j)
             coordenada[key]= cria_parcela()
             res= res + [coordenada,]
     return (res,c,l)
@@ -246,12 +257,123 @@ def obtem_ultima_linha(m):
     return m[2]
 
 def obtem_parcela(m,c):
-    for i in m:
-        if ()
+    for i in m[0]:
+        if coordenada_para_str(c) in i:
+            return i[coordenada_para_str]
+
+
+
+def obtem_coordenadas (m,s):
+    res=()
+    if s == "tapadas" or s=="limpas" or s=="marcadas":
+        if s == "tapadas":
+            s_aux="tapada"
+        if s == "marcadas":
+            s_aux = "marcada"
+        if s == "limpas":
+            s_aux= "limpa"
+        for i in m[0]:
+            key= coordenada_para_str(i)
+            if i[key]["estado"] == s_aux:
+                res = res + (key,)
+    else:
+        for i in m[0]:
+            key= coordenada_para_str(i)
+            if i[key]["mina"] == "sim":
+                res = res +key
+    return res
+
+def obtem_numero_minas_vizinhas (m,c):
+    coord_vizinhas = obtem_coordenadas_vizinhas(c)
+    coord_vizinhas_str =()
+    for j in coord_vizinhas:
+        coord_vizinhas_str= coord_vizinhas_str + (coordenada_para_str(j),)
+    coord_com_minas = obtem_coordenadas(m, "minadas")
+    res= 0
+    for i in coord_vizinhas_str:
+        if i in coord_com_minas:
+            res= res +1
+    return res
+
+
+def eh_campo (arg):
+    if type(arg) != list or len(arg) != 3:
+        return False
+    if  type(arg[0]) != list or type(arg[1]) != str or ord(arg[1]) < 65 or ord(arg[1])>90 or type(arg[2]) != int or arg[2]>100 or arg[1]<1:
+        return False
+    for i in arg[0]:
+        if ( eh_coordenada(i) == False):
+            return False
+        key= coordenada_para_str(i)
+        if (eh_parcela(i[key]) == False):
+            return False
+    return True
+
+def eh_coordenada_do_campo(m,c):
+    col_max = m[1]
+    lin_max = m[2]
+    #if  ord(obtem_coluna(c)) < 65 or ord(obtem_coluna(c)) > ord(col_max) or obtem_linha(c) < 1 or obtem_linha(c) > lin_max:
+    if 65 > ord(obtem_coluna(c)) > ord(col_max) or 1 > obtem_linha(c) > lin_max:
+        return False
+    return True
+
+
+def campos_iguais(m1,m2):
+    if eh_campo(m1) == False or eh_campo(m2) == False:
+        return False
+    if m1[1] != m2[1] or m1[2] != m2[2] or len(m1[0]) != len(m2[0]):
+        return False
+    for i in range(len(m1[0])):
+        if coordenadas_iguais(m1[0][i], m2[0][i]) == False:
+            return False
+        else:
+            key = coordenada_para_str(m1[0][i])
+            if parcelas_iguais(m1[0][i][key], m2[0][i][key]) == False:
+                return False
+    return True
+
+
+def campo_para_str (m):
+    res="   "
+    col_max= obtem_ultima_coluna(m)
+    lin_max= obtem_ultima_linha(m)
+    tamanho_coluna = ord(col_max) - ord("A") +1
+    for i in range(ord("A"), ord(col_max) +1):
+        res= res + chr(i)
+    res= res + "\n  +"
+    for j in range(tamanho_coluna):
+        res= res + "-"
+    res= res + "+\n"
+    contador =-1
+    for ii in range (1,lin_max +1):
+        contador = contador +1 
+        if ii >= 10:
+            res= res + str(ii) + "|"
+        else:
+            res= res + "0" + str(ii) + "|"
+        for jj in range(contador * tamanho_coluna, contador*tamanho_coluna + tamanho_coluna ): 
+            key= coordenada_para_str(m[0][jj])
+            res = res + parcela_para_str(m[0][jj][key])
+        res= res + "|\n"
+    res= res + "  +"
+    for j in range(tamanho_coluna):
+        res= res + "-"
+    res= res + "+"
+    return res
+
+
+def 
+
+
+
+m1= cria_campo("A",3)
+m = cria_campo("I",7)
+#print(m1)
+print(m)
+print(campo_para_str(m))
+#print(campo_para_str(m))
 
 
 
 
 
-
-    
