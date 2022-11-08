@@ -307,8 +307,7 @@ def eh_campo (arg):
 def eh_coordenada_do_campo(m,c):
     col_max = m[1]
     lin_max = m[2]
-    #if  ord(obtem_coluna(c)) < 65 or ord(obtem_coluna(c)) > ord(col_max) or obtem_linha(c) < 1 or obtem_linha(c) > lin_max:
-    if 65 > ord(obtem_coluna(c)) > ord(col_max) or 1 > obtem_linha(c) > lin_max:
+    if  ord(obtem_coluna(c)) < 65 or ord(obtem_coluna(c)) > ord(col_max) or int(obtem_linha(c)) < 1 or int(obtem_linha(c)) > lin_max:
         return False
     return True
 
@@ -383,7 +382,9 @@ def limpa_campo(m,c):
         limpa_parcela(obtem_parcela(m,c))
     else:
         limpa_parcela(obtem_parcela(m,c))
-        coord_analisar =[c]
+        coord_analisar=[]
+        if (obtem_numero_minas_vizinhas(m,c)) == 0:
+            coord_analisar =[c]
         while len(coord_analisar) != 0:
             coord_vizinhas=obtem_coordenadas_vizinhas(coord_analisar[0])
             coord_vizinhas_tapadas =[]
@@ -399,34 +400,6 @@ def limpa_campo(m,c):
     return m
 
 
-
-
-
-# m = cria_campo("E",5)
-# obtem_ultima_coluna(m), obtem_ultima_linha(m)
-# print(campo_para_str(m))
-
-# for l in "ABC":esconde_mina(obtem_parcela(m, cria_coordenada(l,1)))
-# for l in "BC":esconde_mina(obtem_parcela(m, cria_coordenada(l,2)))
-# for l in "DE":limpa_parcela(obtem_parcela(m, cria_coordenada(l,1)))
-# for l in "AD":limpa_parcela(obtem_parcela(m, cria_coordenada(l,2)))
-# for l in "ABCDE":limpa_parcela(
-# obtem_parcela(m, cria_coordenada(l,3)))
-# alterna_bandeira(obtem_parcela(m, cria_coordenada("D",4)))
-
-# print(campo_para_str(m))
-
-# m = cria_campo("E",5)
-# print(campo_para_str(m))
-# g = cria_gerador(32, 1)
-# c = cria_coordenada("D", 4)
-# m = coloca_minas(m, c, g, 2)
-# print(tuple(coordenada_para_str(p) for p in
-# obtem_coordenadas(m, "minadas")))
-# print(obtem_numero_minas_vizinhas(m,cria_coordenada("A",1)))
-# print(campo_para_str(m))
-# print(campo_para_str(limpa_campo(m, c)))
-
 def  jogo_ganho (m):
     coord_limpas= obtem_coordenadas(m,"limpas")
     num_coord_sem_minas = ((1 + ord(obtem_ultima_coluna(m))- ord("A")) * obtem_ultima_linha(m)) - len(obtem_coordenadas(m,"minadas"))
@@ -440,18 +413,61 @@ def  jogo_ganho (m):
     
 
 def turno_jogador(m):
-    M_ou_L = input(eval("Escolha uma ação, [L]impar ou [M]arcar"))
+    M_ou_L = (input("Escolha uma ação, [L]impar ou [M]arcar:"))
     while M_ou_L != "M" and M_ou_L != "L":
-        M_ou_L = input(eval("Escolha uma ação, [L]impar ou [M]arcar"))
-    coordenada_str= input(eval("Escolha uma coordenada"))
+        M_ou_L = (input("Escolha uma ação, [L]impar ou [M]arcar:"))
+    coordenada_str= (input("Escolha uma coordenada:"))
     coordenada = str_para_coordenada(coordenada_str)
     while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False:
-        coordenada_str= input(eval("Escolha uma coordenada"))
+        coordenada_str= (input("Escolha uma coordenada:"))
         coordenada= str_para_coordenada(coordenada_str)
     if M_ou_L == "M":
         alterna_bandeira(obtem_parcela(m,coordenada))
     else:
         limpa_campo(m,coordenada)
+        if eh_parcela_minada(obtem_parcela(m,coordenada)):
+            return False
+        return True
+
+def minas (c,l,n,d,s):
+    try:
+        g =cria_gerador(d,s)
+        m = cria_campo(c,l)
+    except:
+        raise ValueError("minas: argumentos invalidos")
+    print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
+    print(campo_para_str(m))
+    coordenada_str= (input("Escolha uma coordenada:"))
+    coordenada = str_para_coordenada(coordenada_str)
+    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False:
+        coordenada_str= (input("Escolha uma coordenada:"))
+        coordenada= str_para_coordenada(coordenada_str)
+    coloca_minas(m,coordenada,g,n)
+    limpa_campo(m,coordenada)
+    print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
+    print(campo_para_str(m))
+    while jogo_ganho(m) == False:
+        if turno_jogador(m) == False:
+            print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
+            print(campo_para_str(m))
+            print("PARRECO PERDESTE")
+            return False
+        else:
+            print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
+            print(campo_para_str(m))
+    print("GANHASTEEEEE")
+    return True
+
+minas("Z", 10, 20, 32, 2)
+
+
+        
+
+
+
+    
+
+
 
 
 
