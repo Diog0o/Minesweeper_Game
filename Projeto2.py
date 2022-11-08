@@ -1,6 +1,6 @@
 #2.1.1
 
-def cria_gerador (b,s):
+def cria_gerador (b,s): #falta verificar muitos argumentos
     if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<0): #Pode ser negativo??
         raise ValueError("cria gerador: argumentos invalidos")
     return {"dimensao":b , "seed":s , "estado": s}
@@ -67,9 +67,9 @@ g2 = cria_gerador(64, 1)
 
 #2.1.2
 
-def cria_coordenada(col,lin):
+def cria_coordenada(col,lin): # nao pode ser 00 e o len tem que ser 3
     if type(col) != str or type(lin) != int or len(col) != 1 or lin>99: #Tirei o or ord(col) < 65 or ord(col)>90
-        raise ValueError("cria coordenada: argumentos invalidos")
+        raise ValueError("cria_coordenada: argumentos invalidos")
     else:
         dicionario ={}
         if lin >= 10:
@@ -92,7 +92,7 @@ def eh_coordenada(arg):
     if type(arg) != dict or len(arg) != 1:
         return False
     key=list(arg.keys())
-    if  type(key[0][0])!=str or ord(key[0][0]) < 65 or ord(key[0][0])>90 or type(int(key[0][1:])) != int or int(key[0][1:])>100 or int(key[0][1:])<1:
+    if  type(key[0][0])!=str or ord(key[0][0]) < 65 or ord(key[0][0])>90 or type(int(key[0][1:])) != int or int(key[0][1:])>100 or int(key[0][1:])<1 or len(key[0]) !=3:
         return False
     return True
 
@@ -131,8 +131,8 @@ def obtem_coordenadas_vizinhas (c):
     return res
 
 def obtem_coordenada_aleatoria(c,g):
-    linha_aleatoria = gera_numero_aleatorio(g, int(obtem_linha(c)))
     coluna_aleatoria = gera_carater_aleatorio(g, obtem_coluna(c))
+    linha_aleatoria = gera_numero_aleatorio(g, int(obtem_linha(c)))
     return cria_coordenada(coluna_aleatoria,linha_aleatoria)
 
 
@@ -354,13 +354,12 @@ def campo_para_str (m):
 def coloca_minas (m,c,g,n):
     coord_vizinha_aux = obtem_coordenadas_vizinhas(c)
     coord_vizinhas=[coordenada_para_str(c)]
+    coord_final = cria_coordenada(obtem_ultima_coluna(m),obtem_ultima_linha(m))
     for i in coord_vizinha_aux:
         coord_vizinhas=coord_vizinhas + [coordenada_para_str(i)]
     minas_colocadas =[]
     while len(minas_colocadas) < n:
-        coluna_aleatoria=gera_carater_aleatorio(g, obtem_ultima_coluna(m))
-        linha_aleatoria=gera_numero_aleatorio(g,obtem_ultima_linha(m))
-        c_aux = cria_coordenada(coluna_aleatoria,linha_aleatoria)
+        c_aux = obtem_coordenada_aleatoria(coord_final,g)
         if coordenada_para_str(c_aux) not in coord_vizinhas and coordenada_para_str(c_aux) not in minas_colocadas:
             minas_colocadas= minas_colocadas +[coordenada_para_str(c_aux)]
             esconde_mina(obtem_parcela(m,c_aux))
@@ -407,7 +406,7 @@ def turno_jogador(m):
         M_ou_L = (input("Escolha uma ação, [L]impar ou [M]arcar:"))
     coordenada_str= (input("Escolha uma coordenada:"))
     coordenada = str_para_coordenada(coordenada_str)
-    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False:
+    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False or coordenada_str != coordenada_para_str(coordenada):
         coordenada_str= (input("Escolha uma coordenada:"))
         coordenada= str_para_coordenada(coordenada_str)
     if M_ou_L == "M":
@@ -418,7 +417,7 @@ def turno_jogador(m):
             return False
         return True
 
-def minas (c,l,n,d,s):
+def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pode haver mais bombas do que casas possiveis 
     try:
         g =cria_gerador(d,s)
         m = cria_campo(c,l)
@@ -428,7 +427,7 @@ def minas (c,l,n,d,s):
     print(campo_para_str(m))
     coordenada_str= (input("Escolha uma coordenada:"))
     coordenada = str_para_coordenada(coordenada_str)
-    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False:
+    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False or coordenada_str != coordenada_para_str(coordenada):
         coordenada_str= (input("Escolha uma coordenada:"))
         coordenada= str_para_coordenada(coordenada_str)
     coloca_minas(m,coordenada,g,n)
@@ -439,15 +438,15 @@ def minas (c,l,n,d,s):
         if turno_jogador(m) == False:
             print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
             print(campo_para_str(m))
-            print("PARRECO PERDESTE")
+            print("BOOOOOOOM!!!")
             return False
         else:
             print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
             print(campo_para_str(m))
-    print("GANHASTEEEEE")
+    print("VITORIA!!!")
     return True
 
-minas("Z", 10, 20, 32, 2)
+
 
 
         
