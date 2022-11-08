@@ -62,9 +62,7 @@ def gera_carater_aleatorio (g,c): # c nao pode ser "A" <--------------
 
 
 g2 = cria_gerador(64, 1)
-# [atualiza_estado(g2) for n in range(5)]
-# print(gerador_para_str(g2))
-# print(gera_carater_aleatorio(g2, "Z"))
+
 
 
 #2.1.2
@@ -137,15 +135,6 @@ def obtem_coordenada_aleatoria(c,g):
     coluna_aleatoria = gera_carater_aleatorio(g, obtem_coluna(c))
     return cria_coordenada(coluna_aleatoria,linha_aleatoria)
 
-
-# c1=cria_coordenada("B", 1)
-# c2 = cria_coordenada("N", 20)
-# print(coordenadas_iguais(c1, c2))
-
-# print(coordenada_para_str(c1))
-
-# t = obtem_coordenadas_vizinhas(c1)
-# print(tuple(coordenada_para_str(p) for p in t))
 
 
 # 2.1.3
