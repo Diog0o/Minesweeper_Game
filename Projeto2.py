@@ -70,7 +70,7 @@ g2 = cria_gerador(64, 1)
 #2.1.2
 
 def cria_coordenada(col,lin):
-    if type(col) != str or type(lin) != int or len(col) != 1 or ord(col) < 65 or ord(col)>90 or lin>99:
+    if type(col) != str or type(lin) != int or len(col) != 1 or lin>99: #Tirei o or ord(col) < 65 or ord(col)>90
         raise ValueError("cria coordenada: argumentos invalidos")
     else:
         dicionario ={}
@@ -259,10 +259,10 @@ def obtem_ultima_linha(m):
 def obtem_parcela(m,c):
     for i in m[0]:
         if coordenada_para_str(c) in i:
-            return i[coordenada_para_str]
+            return i[coordenada_para_str(c)]
 
 
-
+#Usar as funcoes das parcelas esconde_mina, marca_parcela ....
 def obtem_coordenadas (m,s):
     res=()
     if s == "tapadas" or s=="limpas" or s=="marcadas":
@@ -275,23 +275,18 @@ def obtem_coordenadas (m,s):
         for i in m[0]:
             key= coordenada_para_str(i)
             if i[key]["estado"] == s_aux:
-                res = res + (key,)
+                res = res + (i,)
     else:
         for i in m[0]:
-            key= coordenada_para_str(i)
-            if i[key]["mina"] == "sim":
-                res = res +key
+            if eh_parcela_minada(obtem_parcela(m,i)):
+                res = res +(i,)
     return res
 
 def obtem_numero_minas_vizinhas (m,c):
     coord_vizinhas = obtem_coordenadas_vizinhas(c)
-    coord_vizinhas_str =()
-    for j in coord_vizinhas:
-        coord_vizinhas_str= coord_vizinhas_str + (coordenada_para_str(j),)
-    coord_com_minas = obtem_coordenadas(m, "minadas")
     res= 0
-    for i in coord_vizinhas_str:
-        if i in coord_com_minas:
+    for i in coord_vizinhas:
+        if eh_parcela_minada(obtem_parcela(m,i)) == True:
             res= res +1
     return res
 
@@ -353,7 +348,13 @@ def campo_para_str (m):
             res= res + "0" + str(ii) + "|"
         for jj in range(contador * tamanho_coluna, contador*tamanho_coluna + tamanho_coluna ): 
             key= coordenada_para_str(m[0][jj])
-            res = res + parcela_para_str(m[0][jj][key])
+            if parcela_para_str(m[0][jj][key]) == "?":
+                if obtem_numero_minas_vizinhas(m,m[0][jj]) == 0:
+                    res= res + " "
+                else:
+                    res= res + str(obtem_numero_minas_vizinhas(m,m[0][jj]))
+            else:
+                res = res + parcela_para_str(m[0][jj][key])
         res= res + "|\n"
     res= res + "  +"
     for j in range(tamanho_coluna):
@@ -363,29 +364,94 @@ def campo_para_str (m):
 
 
 def coloca_minas (m,c,g,n):
-    coord_vizinhas = obtem_coordenadas_vizinhas(c)
+    coord_vizinha_aux = obtem_coordenadas_vizinhas(c)
+    coord_vizinhas=[coordenada_para_str(c)]
+    for i in coord_vizinha_aux:
+        coord_vizinhas=coord_vizinhas + [coordenada_para_str(i)]
     minas_colocadas =[]
-    while minas_colocadas < n:
-        coluna_aleatoria=gera_numero_aleatorio(g, obtem_ultima_coluna(m))
+    while len(minas_colocadas) < n:
+        coluna_aleatoria=gera_carater_aleatorio(g, obtem_ultima_coluna(m))
         linha_aleatoria=gera_numero_aleatorio(g,obtem_ultima_linha(m))
-        c = cria_coordenada(coluna_aleatoria,linha_aleatoria)
-        if coordenada_para_str(c) not in coord_vizinhas and coordenada_para_str(c) not in minas_colocadas:
-            minas_colocadas= minas_colocadas +[coordenada_para_str(c)]
-            obtem_parcela(m,c)["mina"] = "sim"
+        c_aux = cria_coordenada(coluna_aleatoria,linha_aleatoria)
+        if coordenada_para_str(c_aux) not in coord_vizinhas and coordenada_para_str(c_aux) not in minas_colocadas:
+            minas_colocadas= minas_colocadas +[coordenada_para_str(c_aux)]
+            esconde_mina(obtem_parcela(m,c_aux))
+    return m
+
+def limpa_campo(m,c):
+    if eh_parcela_minada(obtem_parcela(m,c)):
+        limpa_parcela(obtem_parcela(m,c))
+    else:
+        limpa_parcela(obtem_parcela(m,c))
+        coord_analisar =[c]
+        while len(coord_analisar) != 0:
+            coord_vizinhas=obtem_coordenadas_vizinhas(coord_analisar[0])
+            coord_vizinhas_tapadas =[]
+            del coord_analisar[0]
+            for j in coord_vizinhas:
+                if eh_parcela_tapada(obtem_parcela(m,j)) == True and eh_parcela_minada(obtem_parcela(m,j)) == False:
+                    coord_vizinhas_tapadas= coord_vizinhas_tapadas + [j]
+            for l in coord_vizinhas_tapadas:
+                if obtem_numero_minas_vizinhas(m,l) == 0 and eh_parcela_tapada(obtem_parcela(m,l)):
+                    coord_analisar = coord_analisar + [l]
+            for k in coord_vizinhas_tapadas:
+                limpa_parcela(obtem_parcela(m,k))
     return m
 
 
 
 
 
-m = cria_campo("I",7)
-print(coloca_minas(m,cria_coordenada("B",3),g2,15))
-#print(m1)
-print(m)
-print(campo_para_str(m))
-#print(campo_para_str(m))
+# m = cria_campo("E",5)
+# obtem_ultima_coluna(m), obtem_ultima_linha(m)
+# print(campo_para_str(m))
 
+# for l in "ABC":esconde_mina(obtem_parcela(m, cria_coordenada(l,1)))
+# for l in "BC":esconde_mina(obtem_parcela(m, cria_coordenada(l,2)))
+# for l in "DE":limpa_parcela(obtem_parcela(m, cria_coordenada(l,1)))
+# for l in "AD":limpa_parcela(obtem_parcela(m, cria_coordenada(l,2)))
+# for l in "ABCDE":limpa_parcela(
+# obtem_parcela(m, cria_coordenada(l,3)))
+# alterna_bandeira(obtem_parcela(m, cria_coordenada("D",4)))
 
+# print(campo_para_str(m))
+
+# m = cria_campo("E",5)
+# print(campo_para_str(m))
+# g = cria_gerador(32, 1)
+# c = cria_coordenada("D", 4)
+# m = coloca_minas(m, c, g, 2)
+# print(tuple(coordenada_para_str(p) for p in
+# obtem_coordenadas(m, "minadas")))
+# print(obtem_numero_minas_vizinhas(m,cria_coordenada("A",1)))
+# print(campo_para_str(m))
+# print(campo_para_str(limpa_campo(m, c)))
+
+def  jogo_ganho (m):
+    coord_limpas= obtem_coordenadas(m,"limpas")
+    num_coord_sem_minas = ((1 + ord(obtem_ultima_coluna(m))- ord("A")) * obtem_ultima_linha(m)) - len(obtem_coordenadas(m,"minadas"))
+    if len(coord_limpas) != num_coord_sem_minas:
+        return False
+    else:
+        for i in coord_limpas:
+            if eh_parcela_minada(obtem_parcela(m,i)):
+                return False
+    return True
+    
+
+def turno_jogador(m):
+    M_ou_L = input(eval("Escolha uma ação, [L]impar ou [M]arcar"))
+    while M_ou_L != "M" and M_ou_L != "L":
+        M_ou_L = input(eval("Escolha uma ação, [L]impar ou [M]arcar"))
+    coordenada_str= input(eval("Escolha uma coordenada"))
+    coordenada = str_para_coordenada(coordenada_str)
+    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False:
+        coordenada_str= input(eval("Escolha uma coordenada"))
+        coordenada= str_para_coordenada(coordenada_str)
+    if M_ou_L == "M":
+        alterna_bandeira(obtem_parcela(m,coordenada))
+    else:
+        limpa_campo(m,coordenada)
 
 
 
