@@ -62,9 +62,9 @@ def gera_carater_aleatorio (g,c): # c nao pode ser "A" <--------------
 
 
 g2 = cria_gerador(64, 1)
-[atualiza_estado(g2) for n in range(5)]
-print(gerador_para_str(g2))
-print(gera_carater_aleatorio(g2, "Z"))
+# [atualiza_estado(g2) for n in range(5)]
+# print(gerador_para_str(g2))
+# print(gera_carater_aleatorio(g2, "Z"))
 
 
 #2.1.2
@@ -362,12 +362,24 @@ def campo_para_str (m):
     return res
 
 
-def 
+def coloca_minas (m,c,g,n):
+    coord_vizinhas = obtem_coordenadas_vizinhas(c)
+    minas_colocadas =[]
+    while minas_colocadas < n:
+        coluna_aleatoria=gera_numero_aleatorio(g, obtem_ultima_coluna(m))
+        linha_aleatoria=gera_numero_aleatorio(g,obtem_ultima_linha(m))
+        c = cria_coordenada(coluna_aleatoria,linha_aleatoria)
+        if coordenada_para_str(c) not in coord_vizinhas and coordenada_para_str(c) not in minas_colocadas:
+            minas_colocadas= minas_colocadas +[coordenada_para_str(c)]
+            obtem_parcela(m,c)["mina"] = "sim"
+    return m
 
 
 
-m1= cria_campo("A",3)
+
+
 m = cria_campo("I",7)
+print(coloca_minas(m,cria_coordenada("B",3),g2,15))
 #print(m1)
 print(m)
 print(campo_para_str(m))
