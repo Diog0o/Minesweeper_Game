@@ -452,7 +452,7 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
 
 m = cria_campo("B",3)
 
-m1= cria_copia_campo(m)
+m1= m.copy()
 limpa_parcela(obtem_parcela(m,cria_coordenada("B",2)))
 print(m)
 print(m1)
