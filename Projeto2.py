@@ -233,9 +233,9 @@ def cria_campo (c,l):
                 key = chr(i) + "0" + str(j)
             coordenada[key]= cria_parcela()
             res= res + [coordenada,]
-    return (res,c,l)
+    return [res,c,l]
 
-def cria_copia_campo(m):
+def cria_copia_campo(m): #mudar isto que nao funciona
     copia= m.copy()
     return copia
 
@@ -450,9 +450,12 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
     return True
 
 
-c1 = cria_coordenada('B', 1)
-t = obtem_coordenadas_vizinhas(c1)
-print(tuple(coordenada_para_str(p) for p in t))
+m = cria_campo("B",3)
+
+m1= cria_copia_campo(m)
+limpa_parcela(obtem_parcela(m,cria_coordenada("B",2)))
+print(m)
+print(m1)
 
 
 
