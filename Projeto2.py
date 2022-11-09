@@ -3,6 +3,12 @@
 def cria_gerador (b,s):
     if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<=0):
         raise ValueError("cria_gerador: argumentos invalidos")
+    if b == 32:
+        if s > (2**32) -1:
+            return False
+    if b == 64:
+        if s > (2**64) -1:
+            return False
     return {"dimensao":b , "seed":s , "estado": s}
 
 def cria_copia_gerador (g):
@@ -219,7 +225,7 @@ def alterna_bandeira(p):
 
 
 #2.1.4
-#Devia devolver sempre cria_campo: argumentos invalidos. Talvez fazer um try ???
+
 def cria_campo (c,l):
     if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
         raise ValueError("cria_campo: argumentos invalidos")
@@ -291,7 +297,8 @@ def eh_campo (arg):
     for i in arg:
         if (eh_coordenada(i) == False):
             return False
-        if (eh_parcela(obtem_parcela(arg,i)) == False):
+        key= coordenada_para_str(i)
+        if (eh_parcela(i[key]) == False):
             return False
     return True
 
@@ -426,8 +433,10 @@ def minas (c,l,n,d,s):
         m = cria_campo(c,l)
     except:
         raise ValueError("minas: argumentos invalidos")
-    maximo= (ord(c) +1) * l
+    maximo= (ord(c) - ord("A") +1) * l
     if  type(n) != int or n >= maximo or n <=0:
+        raise ValueError("minas: argumentos invalidos")
+    if n >= maximo - len(obtem_coordenadas_vizinhas(cria_coordenada("A",1))):
         raise ValueError("minas: argumentos invalidos")
     print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
     print(campo_para_str(m))
@@ -450,13 +459,6 @@ def minas (c,l,n,d,s):
             print(campo_para_str(m))
     print("VITORIA!!!")
     return True
-
-
-
-
-    
-
-
 
 
 
