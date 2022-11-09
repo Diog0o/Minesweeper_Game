@@ -1,8 +1,8 @@
 #2.1.1
 
 def cria_gerador (b,s): #falta verificar muitos argumentos
-    if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<0): #Pode ser negativo??
-        raise ValueError("cria gerador: argumentos invalidos")
+    if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<=0): #Pode ser negativo??
+        raise ValueError("cria_gerador: argumentos invalidos")
     return {"dimensao":b , "seed":s , "estado": s}
 
 def cria_copia_gerador (g):
@@ -68,7 +68,7 @@ g2 = cria_gerador(64, 1)
 #2.1.2
 
 def cria_coordenada(col,lin): # nao pode ser 00 e o len tem que ser 3
-    if type(col) != str or type(lin) != int or len(col) != 1 or lin>99: #Tirei o or ord(col) < 65 or ord(col)>90
+    if type(col) != str or type(lin) != int or len(col) != 1 or lin>99 or lin <1 or ord(col) < 65 or ord(col)>90 : #Tirei o or ord(col) < 65 or ord(col)>90
         raise ValueError("cria_coordenada: argumentos invalidos")
     else:
         dicionario ={}
@@ -116,18 +116,18 @@ def obtem_coordenadas_vizinhas (c):
     res=()
     coluna = obtem_coluna(c)
     linha = int(obtem_linha(c))
-    c1=cria_coordenada(chr(ord(coluna)-1), linha - 1)
-    c8=cria_coordenada(chr(ord(coluna)-1), linha)
-    c7=cria_coordenada(chr(ord(coluna)-1), linha + 1)
-    c6=cria_coordenada(coluna, linha + 1)
-    c5=cria_coordenada(chr(ord(coluna)+1), linha +1)
-    c4=cria_coordenada(chr(ord(coluna)+1), linha)
-    c3=cria_coordenada(chr(ord(coluna)+1), linha-1)
-    c2=cria_coordenada(coluna, linha -1 )
+    c1=(chr(ord(coluna)-1), linha - 1)
+    c8=(chr(ord(coluna)-1), linha)
+    c7=(chr(ord(coluna)-1), linha + 1)
+    c6=(coluna, linha + 1)
+    c5=(chr(ord(coluna)+1), linha +1)
+    c4=(chr(ord(coluna)+1), linha)
+    c3=(chr(ord(coluna)+1), linha-1)
+    c2=(coluna, linha -1)
     res_provisorio=(c1,c2,c3,c4,c5,c6,c7,c8)
     for i in res_provisorio:
-        if eh_coordenada(i) == True:
-            res= res + (i,)
+        if ord(i[0]) >= 65 and ord(i[0]) <= 90 and i[1] <=99 and i[1] >=1:
+            res= res + (cria_coordenada(i[0],i[1]),)
     return res
 
 def obtem_coordenada_aleatoria(c,g):
@@ -219,7 +219,7 @@ def alterna_bandeira(p):
 
 
 #2.1.4
-
+#Devia devolver sempre cria_campo: argumentos invalidos. Talvez fazer um try ???
 def cria_campo (c,l):
     if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
         raise ValueError("cria_campo: argumentos invalidos")
@@ -236,7 +236,7 @@ def cria_campo (c,l):
     return (res,c,l)
 
 def cria_copia_campo(m):
-    copia = m
+    copia= m.copy()
     return copia
 
 def obtem_ultima_coluna(m):
@@ -423,6 +423,9 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
         m = cria_campo(c,l)
     except:
         raise ValueError("minas: argumentos invalidos")
+    maximo= (ord(c) +1) * l
+    if  type(n) != int or n >= maximo or n <=0:
+        raise ValueError("minas: argumentos invalidos")
     print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
     print(campo_para_str(m))
     coordenada_str= (input("Escolha uma coordenada:"))
@@ -446,6 +449,10 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
     print("VITORIA!!!")
     return True
 
+
+c1 = cria_coordenada('B', 1)
+t = obtem_coordenadas_vizinhas(c1)
+print(tuple(coordenada_para_str(p) for p in t))
 
 
 
