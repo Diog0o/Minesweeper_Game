@@ -228,49 +228,52 @@ def cria_campo (c,l):
         for j in range (1,l +1):
             for i in range (ord("A"), ord(c) +1):  
                 coordenada= cria_coordenada(chr(i),j)
-                if j >= 10:
-                    key= chr(i) + str(j)
-                else:
-                    key = chr(i) + "0" + str(j)
+                key= coordenada_para_str(coordenada)
                 coordenada[key]= cria_parcela()
                 res= res + [coordenada,]
-        return [res,c,l]
+        return res
     except:
         raise ValueError("cria_campo: argumentos invalidos")
 
 def cria_copia_campo(m):
-    return [m[0],m[1],m[2]]
+    res=[]
+    for i in m:
+        res= res +[i]
+    return res
 
 def obtem_ultima_coluna(m):
-    return m[1]
+    c=coordenada_para_str(m[-1])
+    return c[0] 
 
 def obtem_ultima_linha(m):
-    return m[2]
+    c = coordenada_para_str(m[-1])
+    return int(c[1:])
 
 def obtem_parcela(m,c):
-    for i in m[0]:
+    for i in m:
         if coordenada_para_str(c) in i:
             return i[coordenada_para_str(c)]
 
 
-#Usar as funcoes das parcelas esconde_mina, marca_parcela ....
+
 def obtem_coordenadas (m,s):
     res=()
-    if s == "tapadas" or s=="limpas" or s=="marcadas":
-        if s == "tapadas":
-            s_aux="tapada"
-        if s == "marcadas":
-            s_aux = "marcada"
-        if s == "limpas":
-            s_aux= "limpa"
-        for i in m[0]:
-            key= coordenada_para_str(i)
-            if i[key]["estado"] == s_aux:
-                res = res + (i,)
-    else:
-        for i in m[0]:
+    if s == "tapadas":
+        for i in m:
+            if eh_parcela_tapada(obtem_parcela(m,i)):
+                res= res + (i,)
+    if s == "limpas":
+        for i in m:
+            if eh_parcela_limpa(obtem_parcela(m,i)):
+                res= res + (i,)
+    if s == "marcadas":
+        for i in m:
+            if eh_parcela_marcada(obtem_parcela(m,i)):
+                res= res + (i,)
+    if s == "minadas":
+        for i in m:
             if eh_parcela_minada(obtem_parcela(m,i)):
-                res = res +(i,)
+                res= res + (i,)
     return res
 
 def obtem_numero_minas_vizinhas (m,c):
@@ -283,15 +286,12 @@ def obtem_numero_minas_vizinhas (m,c):
 
 
 def eh_campo (arg):
-    if type(arg) != list or len(arg) != 3:
+    if type(arg) != list:
         return False
-    if  type(arg[0]) != list or type(arg[1]) != str or type(arg[2]) != int or ord(arg[1]) < 65 or ord(arg[1]) > 90  or arg[2]>100 or arg[2]<1:
-        return False
-    for i in arg[0]:
+    for i in arg:
         if (eh_coordenada(i) == False):
             return False
-        key= coordenada_para_str(i)
-        if (eh_parcela(i[key]) == False):
+        if (eh_parcela(obtem_parcela(arg,i)) == False):
             return False
     return True
 
@@ -307,14 +307,13 @@ def eh_coordenada_do_campo(m,c):
 def campos_iguais(m1,m2):
     if eh_campo(m1) == False or eh_campo(m2) == False:
         return False
-    if m1[1] != m2[1] or m1[2] != m2[2] or len(m1[0]) != len(m2[0]):
+    if len(m1) != len(m2):
         return False
-    for i in range(len(m1[0])):
-        if coordenadas_iguais(m1[0][i], m2[0][i]) == False:
+    for i in range(len(m1)):
+        if coordenadas_iguais(m1[i], m2[i]) == False:
             return False
         else:
-            key = coordenada_para_str(m1[0][i])
-            if parcelas_iguais(m1[0][i][key], m2[0][i][key]) == False:
+            if parcelas_iguais(obtem_parcela(m1,m1[i]), obtem_parcela(m2,m2[i])) == False:
                 return False
     return True
 
@@ -338,14 +337,14 @@ def campo_para_str (m):
         else:
             res= res + "0" + str(ii) + "|"
         for jj in range(contador * tamanho_coluna, contador*tamanho_coluna + tamanho_coluna ): 
-            key= coordenada_para_str(m[0][jj])
-            if parcela_para_str(m[0][jj][key]) == "?":
-                if obtem_numero_minas_vizinhas(m,m[0][jj]) == 0:
+            key= coordenada_para_str(m[jj])
+            if parcela_para_str(obtem_parcela(m,m[jj])) == "?":
+                if obtem_numero_minas_vizinhas(m,m[jj]) == 0:
                     res= res + " "
                 else:
-                    res= res + str(obtem_numero_minas_vizinhas(m,m[0][jj]))
+                    res= res + str(obtem_numero_minas_vizinhas(m,m[jj]))
             else:
-                res = res + parcela_para_str(m[0][jj][key])
+                res = res + parcela_para_str(obtem_parcela(m,m[jj]))
         res= res + "|\n"
     res= res + "  +"
     for j in range(tamanho_coluna):
@@ -391,7 +390,7 @@ def limpa_campo(m,c):
     return m
 
 
-def  jogo_ganho (m):
+def jogo_ganho (m):
     coord_limpas= obtem_coordenadas(m,"limpas")
     num_coord_sem_minas = ((1 + ord(obtem_ultima_coluna(m))- ord("A")) * obtem_ultima_linha(m)) - len(obtem_coordenadas(m,"minadas"))
     if len(coord_limpas) != num_coord_sem_minas:
@@ -408,11 +407,12 @@ def turno_jogador(m):
     while M_ou_L != "M" and M_ou_L != "L":
         M_ou_L = (input("Escolha uma ação, [L]impar ou [M]arcar:"))
     coordenada_str= (input("Escolha uma coordenada:"))
-    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57:
+    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57 or eh_coordenada_do_campo(m,cria_coordenada(coordenada_str[0],int(coordenada_str[1:]))) == False:
         coordenada_str= (input("Escolha uma coordenada:"))
     coordenada= str_para_coordenada(coordenada_str)
     if M_ou_L == "M":
         alterna_bandeira(obtem_parcela(m,coordenada))
+        return True
     else:
         limpa_campo(m,coordenada)
         if eh_parcela_minada(obtem_parcela(m,coordenada)):
@@ -432,7 +432,7 @@ def minas (c,l,n,d,s):
     print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
     print(campo_para_str(m))
     coordenada_str= (input("Escolha uma coordenada:"))
-    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57:
+    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57 or eh_coordenada_do_campo(m,cria_coordenada(coordenada_str[0],int(coordenada_str[1:]))) == False:
         coordenada_str= (input("Escolha uma coordenada:"))
     coordenada= str_para_coordenada(coordenada_str)
     coloca_minas(m,coordenada,g,n)
@@ -451,9 +451,6 @@ def minas (c,l,n,d,s):
     print("VITORIA!!!")
     return True
 
-
-minas("Z", 5, 10, 32, 15)
-        
 
 
 
