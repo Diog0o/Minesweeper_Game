@@ -1,7 +1,7 @@
 #2.1.1
 
-def cria_gerador (b,s): #falta verificar muitos argumentos
-    if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<=0): #Pode ser negativo??
+def cria_gerador (b,s):
+    if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<=0):
         raise ValueError("cria_gerador: argumentos invalidos")
     return {"dimensao":b , "seed":s , "estado": s}
 
@@ -223,21 +223,23 @@ def alterna_bandeira(p):
 def cria_campo (c,l):
     if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
         raise ValueError("cria_campo: argumentos invalidos")
-    res=[]
-    for j in range (1,l +1):
-        for i in range (ord("A"), ord(c) +1):  
-            coordenada= cria_coordenada(chr(i),j)
-            if j >= 10:
-                key= chr(i) + str(j)
-            else:
-                key = chr(i) + "0" + str(j)
-            coordenada[key]= cria_parcela()
-            res= res + [coordenada,]
-    return [res,c,l]
+    try:        
+        res=[]
+        for j in range (1,l +1):
+            for i in range (ord("A"), ord(c) +1):  
+                coordenada= cria_coordenada(chr(i),j)
+                if j >= 10:
+                    key= chr(i) + str(j)
+                else:
+                    key = chr(i) + "0" + str(j)
+                coordenada[key]= cria_parcela()
+                res= res + [coordenada,]
+        return [res,c,l]
+    except:
+        raise ValueError("cria_campo: argumentos invalidos")
 
-def cria_copia_campo(m): #mudar isto que nao funciona
-    copia= m.copy()
-    return copia
+def cria_copia_campo(m):
+    return [m[0],m[1],m[2]]
 
 def obtem_ultima_coluna(m):
     return m[1]
@@ -283,19 +285,20 @@ def obtem_numero_minas_vizinhas (m,c):
 def eh_campo (arg):
     if type(arg) != list or len(arg) != 3:
         return False
-    if  type(arg[0]) != list or type(arg[1]) != str or ord(arg[1]) < 65 or ord(arg[1])>90 or type(arg[2]) != int or arg[2]>100 or arg[1]<1:
+    if  type(arg[0]) != list or type(arg[1]) != str or type(arg[2]) != int or ord(arg[1]) < 65 or ord(arg[1]) > 90  or arg[2]>100 or arg[2]<1:
         return False
     for i in arg[0]:
-        if ( eh_coordenada(i) == False):
+        if (eh_coordenada(i) == False):
             return False
         key= coordenada_para_str(i)
         if (eh_parcela(i[key]) == False):
             return False
     return True
 
+
 def eh_coordenada_do_campo(m,c):
-    col_max = m[1]
-    lin_max = m[2]
+    col_max = obtem_ultima_coluna(m)
+    lin_max = obtem_ultima_linha(m)
     if  ord(obtem_coluna(c)) < 65 or ord(obtem_coluna(c)) > ord(col_max) or int(obtem_linha(c)) < 1 or int(obtem_linha(c)) > lin_max:
         return False
     return True
@@ -405,10 +408,9 @@ def turno_jogador(m):
     while M_ou_L != "M" and M_ou_L != "L":
         M_ou_L = (input("Escolha uma ação, [L]impar ou [M]arcar:"))
     coordenada_str= (input("Escolha uma coordenada:"))
-    coordenada = str_para_coordenada(coordenada_str)
-    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False or coordenada_str != coordenada_para_str(coordenada):
+    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57:
         coordenada_str= (input("Escolha uma coordenada:"))
-        coordenada= str_para_coordenada(coordenada_str)
+    coordenada= str_para_coordenada(coordenada_str)
     if M_ou_L == "M":
         alterna_bandeira(obtem_parcela(m,coordenada))
     else:
@@ -417,7 +419,8 @@ def turno_jogador(m):
             return False
         return True
 
-def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pode haver mais bombas do que casas possiveis 
+
+def minas (c,l,n,d,s):
     try:
         g =cria_gerador(d,s)
         m = cria_campo(c,l)
@@ -429,10 +432,9 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
     print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
     print(campo_para_str(m))
     coordenada_str= (input("Escolha uma coordenada:"))
-    coordenada = str_para_coordenada(coordenada_str)
-    while  eh_coordenada(coordenada) == False or eh_coordenada_do_campo(m,coordenada) == False or coordenada_str != coordenada_para_str(coordenada):
+    while  len(coordenada_str) != 3 or ord(coordenada_str[0])  < 65 or ord(coordenada_str[0]) > 90 or ord(coordenada_str[1]) < 48 or ord(coordenada_str[1]) >57 or ord(coordenada_str[2]) < 48 or ord(coordenada_str[2]) >57:
         coordenada_str= (input("Escolha uma coordenada:"))
-        coordenada= str_para_coordenada(coordenada_str)
+    coordenada= str_para_coordenada(coordenada_str)
     coloca_minas(m,coordenada,g,n)
     limpa_campo(m,coordenada)
     print("   [Bandeiras " + str(len(obtem_coordenadas(m,"marcadas"))) + "/" + str(n) + "]")
@@ -450,15 +452,7 @@ def minas (c,l,n,d,s): # n não pode ser igual a 0 tem que ser um int e não pod
     return True
 
 
-m = cria_campo("B",3)
-
-m1= m.copy()
-limpa_parcela(obtem_parcela(m,cria_coordenada("B",2)))
-print(m)
-print(m1)
-
-
-
+minas("Z", 5, 10, 32, 15)
         
 
 
