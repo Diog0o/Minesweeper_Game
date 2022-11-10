@@ -74,7 +74,7 @@ g2 = cria_gerador(64, 1)
 #2.1.2
 
 def cria_coordenada(col,lin): # nao pode ser 00 e o len tem que ser 3
-    if type(col) != str or type(lin) != int or len(col) != 1 or lin>99 or lin <1 or ord(col) < 65 or ord(col)>90 : #Tirei o or ord(col) < 65 or ord(col)>90
+    if type(col) != str or type(lin) != int or len(col) != 1 or lin> 100 or lin <1 or ord(col) < 65 or ord(col)>90 : #Tirei o or ord(col) < 65 or ord(col)>90
         raise ValueError("cria_coordenada: argumentos invalidos")
     else:
         dicionario ={}
@@ -227,19 +227,16 @@ def alterna_bandeira(p):
 #2.1.4
 
 def cria_campo (c,l):
-    if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < 65 or ord(c)>90 or l>100 or l<1:
-        raise ValueError("cria_campo: argumentos invalidos")
-    try:        
-        res=[]
-        for j in range (1,l +1):
-            for i in range (ord("A"), ord(c) +1):  
-                coordenada= cria_coordenada(chr(i),j)
-                key= coordenada_para_str(coordenada)
-                coordenada[key]= cria_parcela()
-                res= res + [coordenada,]
-        return res
-    except:
-        raise ValueError("cria_campo: argumentos invalidos")
+    if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < ord("A") or ord(c)> ord("Z") or l>100 or l<1:
+        raise ValueError("cria_campo: argumentos invalidos")     
+    res=[]
+    for j in range (1,l +1):
+        for i in range (ord("A"), ord(c) +1):  
+            coordenada= cria_coordenada(chr(i),j)
+            key= coordenada_para_str(coordenada)
+            coordenada[key]= cria_parcela()
+            res= res + [coordenada,]
+    return res
 
 def cria_copia_campo(m):
     res=[]
@@ -459,6 +456,8 @@ def minas (c,l,n,d,s):
             print(campo_para_str(m))
     print("VITORIA!!!")
     return True
+
+
 
 
 
