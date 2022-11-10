@@ -5,10 +5,10 @@ def cria_gerador (b,s):
         raise ValueError("cria_gerador: argumentos invalidos")
     if b == 32:
         if s > (2**32) -1:
-            return False
+            raise ValueError("cria_gerador: argumentos invalidos")
     if b == 64:
         if s > (2**64) -1:
-            return False
+            raise ValueError("cria_gerador: argumentos invalidos")
     return {"dimensao":b , "seed":s , "estado": s}
 
 def cria_copia_gerador (g):
@@ -55,7 +55,6 @@ def gerador_para_str(g):
     return "xorshift" + str(g["dimensao"]) + "(s=" +  str(g["estado"]) +")"
 
 
-#Provavelmente falta verificar os argumentos
 
 def gera_numero_aleatorio (g,n):
     atualiza_estado(g)
@@ -67,38 +66,29 @@ def gera_carater_aleatorio (g,c): # c nao pode ser "A" <--------------
     return chr( ord("A") + obtem_estado(g) % l)
 
 
-g2 = cria_gerador(64, 1)
 
 
 
 #2.1.2
 
-def cria_coordenada(col,lin): # nao pode ser 00 e o len tem que ser 3
-    if type(col) != str or type(lin) != int or len(col) != 1 or lin> 100 or lin <1 or ord(col) < 65 or ord(col)>90 : #Tirei o or ord(col) < 65 or ord(col)>90
+def cria_coordenada (col,lin):
+    if type(col) != str or type(lin) != int or len(col) != 1 or lin>99 or lin <1 or ord(col) < ord("A") or ord(col)> ord("Z") :
         raise ValueError("cria_coordenada: argumentos invalidos")
     else:
-        dicionario ={}
-        if lin >= 10:
-            coordenada =col + str(lin)
-        else:
-            coordenada = col + "0" + str(lin)
-    dicionario[coordenada] = 0 
-    return dicionario
+        return (col,lin)
+
 
 def obtem_coluna(c):
-    key=list(c.keys())
-    return key[0][0]
+    return c[0]
     
 def obtem_linha(c):
-    key=list(c.keys())
-    return key[0][1:]
+    return c[1]
 
 
 def eh_coordenada(arg):
-    if type(arg) != dict or len(arg) != 1:
+    if type(arg) != tuple or len(arg) != 2:
         return False
-    key=list(arg.keys())
-    if  type(key[0][0])!=str or ord(key[0][0]) < 65 or ord(key[0][0])>90 or type(int(key[0][1:])) != int or int(key[0][1:])>100 or int(key[0][1:])<1 or len(key[0]) !=3:
+    if  type(arg[0])!=str or len(arg[0]) != 1  or ord(arg[0]) < ord("A") or ord(arg[0])> ord("Z") or type(arg[1]) != int or int(arg[1])>99 or (arg[1])<1 :
         return False
     return True
 
@@ -110,7 +100,10 @@ def coordenadas_iguais (c1,c2):
     return False
 
 def coordenada_para_str(c):
-    return obtem_coluna(c) + obtem_linha(c)
+    if obtem_linha(c) >= 10:
+        return obtem_coluna(c) + str(obtem_linha(c))
+    else:
+        return obtem_coluna(c) + "0" + str(obtem_linha(c))
 
 def str_para_coordenada(s):
     if s[1] == 0:
@@ -121,7 +114,7 @@ def str_para_coordenada(s):
 def obtem_coordenadas_vizinhas (c):
     res=()
     coluna = obtem_coluna(c)
-    linha = int(obtem_linha(c))
+    linha =obtem_linha(c)
     c1=(chr(ord(coluna)-1), linha - 1)
     c8=(chr(ord(coluna)-1), linha)
     c7=(chr(ord(coluna)-1), linha + 1)
@@ -132,13 +125,13 @@ def obtem_coordenadas_vizinhas (c):
     c2=(coluna, linha -1)
     res_provisorio=(c1,c2,c3,c4,c5,c6,c7,c8)
     for i in res_provisorio:
-        if ord(i[0]) >= 65 and ord(i[0]) <= 90 and i[1] <=99 and i[1] >=1:
+        if ord(i[0]) >= ord("A") and ord(i[0]) <= ord("Z") and i[1] <=99 and i[1] >=1:
             res= res + (cria_coordenada(i[0],i[1]),)
     return res
 
 def obtem_coordenada_aleatoria(c,g):
     coluna_aleatoria = gera_carater_aleatorio(g, obtem_coluna(c))
-    linha_aleatoria = gera_numero_aleatorio(g, int(obtem_linha(c)))
+    linha_aleatoria = gera_numero_aleatorio(g, obtem_linha(c))
     return cria_coordenada(coluna_aleatoria,linha_aleatoria)
 
 
@@ -227,36 +220,35 @@ def alterna_bandeira(p):
 #2.1.4
 
 def cria_campo (c,l):
-    if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < ord("A") or ord(c)> ord("Z") or l>100 or l<1:
+    if type(c) != str or type(l) != int or len(c) != 1 or ord(c) < ord("A") or ord(c)> ord("Z") or l>99 or l<1:
         raise ValueError("cria_campo: argumentos invalidos")     
-    res=[]
-    for j in range (1,l +1):
-        for i in range (ord("A"), ord(c) +1):  
-            coordenada= cria_coordenada(chr(i),j)
-            key= coordenada_para_str(coordenada)
-            coordenada[key]= cria_parcela()
-            res= res + [coordenada,]
-    return res
+    try:        
+        res={}
+        for j in range (1,l +1):
+            for i in range (ord("A"), ord(c) +1):  
+                coordenada= cria_coordenada(chr(i),j)
+                res[coordenada] = cria_parcela()
+        return res
+    except:
+        raise ValueError("cria_campo: argumentos invalidos")
 
 def cria_copia_campo(m):
-    res=[]
-    for i in m:
-        res= res +[i]
+    res={}
+    for coordenadas in m:
+        res[coordenadas] = cria_copia_parcela(m.get(coordenadas))
     return res
 
+
 def obtem_ultima_coluna(m):
-    c=coordenada_para_str(m[-1])
-    return c[0] 
+    lista = list(m.keys())
+    return obtem_coluna(lista[-1])
 
 def obtem_ultima_linha(m):
-    c = coordenada_para_str(m[-1])
-    return int(c[1:])
+    lista = list(m.keys())
+    return obtem_linha(lista[-1])
 
 def obtem_parcela(m,c):
-    for i in m:
-        if coordenada_para_str(c) in i:
-            return i[coordenada_para_str(c)]
-
+    return m.get(c)
 
 
 def obtem_coordenadas (m,s):
@@ -289,13 +281,12 @@ def obtem_numero_minas_vizinhas (m,c):
 
 
 def eh_campo (arg):
-    if type(arg) != list:
+    if type(arg) != dict or len(arg) == 0:
         return False
     for i in arg:
         if (eh_coordenada(i) == False):
             return False
-        key= coordenada_para_str(i)
-        if (eh_parcela(i[key]) == False):
+        if (eh_parcela(obtem_parcela(arg,i)) == False):
             return False
     return True
 
@@ -303,7 +294,7 @@ def eh_campo (arg):
 def eh_coordenada_do_campo(m,c):
     col_max = obtem_ultima_coluna(m)
     lin_max = obtem_ultima_linha(m)
-    if  ord(obtem_coluna(c)) < 65 or ord(obtem_coluna(c)) > ord(col_max) or int(obtem_linha(c)) < 1 or int(obtem_linha(c)) > lin_max:
+    if  ord(obtem_coluna(c)) < ord("A") or ord(obtem_coluna(c)) > ord(col_max) or (obtem_linha(c)) < 1 or (obtem_linha(c)) > lin_max:
         return False
     return True
 
@@ -313,13 +304,15 @@ def campos_iguais(m1,m2):
         return False
     if len(m1) != len(m2):
         return False
-    for i in range(len(m1)):
-        if coordenadas_iguais(m1[i], m2[i]) == False:
+    coordenadas_m1 = list(m1.keys())
+    coordenadas_m2 = list(m2.keys())
+    for i in range (len(coordenadas_m1)):
+        if coordenadas_iguais(coordenadas_m1[i],coordenadas_m2[i]) == False:
             return False
-        else:
-            if parcelas_iguais(obtem_parcela(m1,m1[i]), obtem_parcela(m2,m2[i])) == False:
-                return False
+        if parcelas_iguais(obtem_parcela(m1, coordenadas_m1[i]), obtem_parcela(m2, coordenadas_m2[i])) == False:
+            return False
     return True
+
 
 
 def campo_para_str (m):
@@ -327,6 +320,7 @@ def campo_para_str (m):
     col_max= obtem_ultima_coluna(m)
     lin_max= obtem_ultima_linha(m)
     tamanho_coluna = ord(col_max) - ord("A") +1
+    lista_coordenadas = list(m.keys())
     for i in range(ord("A"), ord(col_max) +1):
         res= res + chr(i)
     res= res + "\n  +"
@@ -340,15 +334,14 @@ def campo_para_str (m):
             res= res + str(ii) + "|"
         else:
             res= res + "0" + str(ii) + "|"
-        for jj in range(contador * tamanho_coluna, contador*tamanho_coluna + tamanho_coluna ): 
-            key= coordenada_para_str(m[jj])
-            if parcela_para_str(obtem_parcela(m,m[jj])) == "?":
-                if obtem_numero_minas_vizinhas(m,m[jj]) == 0:
+        for jj in range(contador * tamanho_coluna, contador*tamanho_coluna + tamanho_coluna): 
+            if parcela_para_str(obtem_parcela(m,lista_coordenadas[jj])) == "?":
+                if obtem_numero_minas_vizinhas(m,lista_coordenadas[jj]) == 0:
                     res= res + " "
                 else:
-                    res= res + str(obtem_numero_minas_vizinhas(m,m[jj]))
+                    res= res + str(obtem_numero_minas_vizinhas(m,lista_coordenadas[jj]))
             else:
-                res = res + parcela_para_str(obtem_parcela(m,m[jj]))
+                res = res + parcela_para_str(obtem_parcela(m,lista_coordenadas[jj]))
         res= res + "|\n"
     res= res + "  +"
     for j in range(tamanho_coluna):
