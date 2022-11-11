@@ -1,6 +1,12 @@
 #2.1.1
 
 def cria_gerador (b,s):
+    """
+    int x int → gerador
+    Recebe um inteiro b correspondente ao número de bits
+    do gerador e um inteiro positivo s correspondente à seed ou estado inicial,
+    e devolve o gerador correspondente
+    """
     if (type(b) != int or (b != 32 and b!= 64) or type(s)!= int or s<=0):
         raise ValueError("cria_gerador: argumentos invalidos")
     if b == 32:
@@ -271,6 +277,7 @@ def obtem_coordenadas (m,s):
                 res= res + (i,)
     return res
 
+
 def obtem_numero_minas_vizinhas (m,c):
     coord_vizinhas = obtem_coordenadas_vizinhas(c)
     res= 0
@@ -449,7 +456,6 @@ def minas (c,l,n,d,s):
             print(campo_para_str(m))
     print("VITORIA!!!")
     return True
-
 
 
 
