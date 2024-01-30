@@ -5,8 +5,8 @@
 **Class:** Programming Fundamentals  
 **Programming Language:** Python  
 **Objective:** Minesweeper Game Implementation  
-**Grade:** 20/20
-**Institute:** Instituto Superior Técnico 
+**Grade:** 20/20  
+**Institute:** Instituto Superior Técnico  
 **Year:** 2023
 
 ---
